@@ -25,6 +25,7 @@
   grid-column: 2;
   grid-row: 2;
   margin-top: 5%;
+  margin-bottom: 5%;
 
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -47,8 +48,26 @@
 }
 
 .footer {
-  margin-top: 5%;
-  text-align: center;
   grid-column: 2;
   grid-row: 3;
+  text-align: center;
+}
+
+.reset {
+  padding: 0.5em 1.7em;
+  margin: 0 0.1em 0.1em 0;
+  border: 0.16em solid rgb(255, 255, 255);
+  border-radius: 2em;
+  font-size: large;
+  color: #ffffff;
+  text-shadow: 0 0.04em 0.04em rgba(255, 255, 255, 0.253);
+  text-align: center;
+  transition: all 0.2s;
+  max-width: 100px;
+  max-height: 50px;
+}
+
+.reset:hover {
+  color: black;
+  background-color: rgb(255, 255, 255);
 }
