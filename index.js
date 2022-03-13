@@ -4,7 +4,6 @@ window.addEventListener('DOMContentLoaded', () => {
     const resetButton = document.querySelector('.reset');
     const announcer = document.querySelector('.announcer');
 
-    // this is just the in-memory board state!
     let board = ['','','','','','','','',''];
     let currentPlayer = 'X';
     let gameIsActive = true;
@@ -18,12 +17,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     const switchPlayer = () => {
-        if(currentPlayer=='X'){
-            currentPlayer='O';
-        }
-        else{
-            currentPlayer='X';
-        }
+        currentPlayer == 'X' ? currentPlayer = 'O' : currentPlayer = 'X';
     }
 
     const horizontalWin = () => {
@@ -70,22 +64,32 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     const setWinner = () => {
-        announcer.innerHTML = 'Player ' + currentPlayer + ' wins! <br><br>'
-        announcer.classList.remove('hide')
+        announcer.innerHTML = 'Player ' + currentPlayer + ' wins! <br><br>';
+        announcer.classList.remove('hide');
+        gameIsActive = false;
+    }
+
+    const checkDraw = () => {
+        for(let i = 0; i < board.length; i++){
+            if(board[i] == ""){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    const setDraw = () => {
+        announcer.innerHTML = "It's a draw! <br><br>";
+        announcer.classList.remove('hide');
+        gameIsActive = false;
     }
 
     const updateBoard = (tile, index) => {
         if(gameIsActive){
             if(!tileIsOccupied(index)){
-                tile.innerText = currentPlayer;
+                tile.innerHTML = '<fade-in>' + currentPlayer;
                 board[index] = currentPlayer;
-                if(checkWin()){
-                    setWinner()
-                    //freeze game
-                }
-                else{
-                    switchPlayer();
-                }
+                checkWin() ? setWinner() : checkDraw() ? setDraw() : switchPlayer();
             }
         }
     }
@@ -99,10 +103,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const resetGame = () => {
         resetBoard();
-        currentPlayer='X'
-        announcer.classList.add('hide')
+        currentPlayer='X';
+        announcer.classList.add('hide');
+        gameIsActive=true;
     }
-
     
     tiles.forEach((tile, index) => {
         tile.addEventListener('click', () => updateBoard(tile, index));
