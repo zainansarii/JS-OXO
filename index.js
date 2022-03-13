@@ -1,13 +1,17 @@
+import { State } from "./ai.js";
+
 window.addEventListener('DOMContentLoaded', () => {
+
     const tiles = Array.from(document.querySelectorAll('.tile'));
     const playerDisplay = document.querySelector('.display-player');
     const resetButton = document.querySelector('.reset');
     const announcer = document.querySelector('.announcer');
 
+    // console.log(new State(1,2).possibleMoves())
+
     let board = ['','','','','','','','',''];
     let currentPlayer = 'X';
     let gameIsActive = true;
-
 
     const tileIsOccupied = (index) => {
         if(board[index]!=""){
