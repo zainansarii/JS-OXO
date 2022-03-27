@@ -7,9 +7,11 @@
 // 5) States with 3 O's in a row => value=0
 // 6) Every other state has value=0.5 (50% probability of winning)
 
-export let State = class {
+export let Simulation = class {
     
-    constructor(p1, p2) {
+    constructor(p1,p2) {
+        this.p1 = p1
+        this.p2 = p2
         this.board = [0,0,0,0,0,0,0,0,0];
         this.game_active = true;
     }
@@ -30,9 +32,6 @@ export let State = class {
     }
 
     winner(){
-
-        // MAKE SURE TO UPDATE GAME_IS_ACTIVE variable!
-
         // horizontal win
         for(let i = 0; i <9; i+=3){
             if(this.board[i]+this.board[i+1]+this.board[i+2]==3){
@@ -80,11 +79,17 @@ export let State = class {
     }
 
     availablePositions(){
-        
+        // returns array of possible moves
+        let positions = [];
+        for(let i = 0; i < this.board.length; i++){
+            if(this.board[i] == 0){
+                positions.push(i);
+            }
+        }
+        return positions;
     }
 
-    updateState(){
-
+    updateState(position){
     }
 
     giveReward(){
@@ -100,24 +105,39 @@ export let State = class {
     }
   };
 
-
 export let Agent = class {
 
-    constructor(name){
-        this.name = name;
+    constructor(playerNumber){
+        this.playerNumber = playerNumber;
         this.states = [];
         this.learningRate = 0.2;
         this.explorationRate = 0.3;
         this.decayGamma = 0.9;
-        this.qTable = {}; // state -> value
+        // need to initialise qTable
+        this.qTable = {}; // state (board hash) -> value
     }
 
     getHash(board){
         return board.toString();
     }
     
-    chooseAction(){
-
+    chooseAction(board, possibleActions){
+        // choose action with highest value in qTable
+        let possibleBoards = [];
+        for(let i = 0; i < possibleActions.length; i++){
+            possibleBoards[i] = board;
+            possibleBoards[i][possibleActions[i]] = this.playerNumber;
+        }
+        let index = 0;
+        let maxValue = 0;
+        for(let i = 0; i < possibleBoards.length; i++){
+            let value = this.qTable[this.getHash(possibleBoards[i])];
+            if(value > maxValue){
+                maxValue = value;
+                index = i;
+            }
+        }
+        return possibleActions[i];
     }
 
     addState(){
@@ -132,3 +152,10 @@ export let Agent = class {
 
     }
 }
+
+// let p1 = new Agent(1);
+// let p2 = new Agent(2);
+// let simulation = new Simulation(p1, p2);
+
+// simulation.play();
+// above should result in two trained AI: p1 and p2

@@ -7,8 +7,6 @@ window.addEventListener('DOMContentLoaded', () => {
     const resetButton = document.querySelector('.reset');
     const announcer = document.querySelector('.announcer');
 
-    // console.log(new State(1,2).possibleMoves())
-
     let board = ['','','','','','','','',''];
     let currentPlayer = 'X';
     let gameIsActive = true;
