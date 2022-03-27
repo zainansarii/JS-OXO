@@ -11,6 +11,7 @@ export let State = class {
     
     constructor(p1, p2) {
         this.board = [0,0,0,0,0,0,0,0,0];
+        this.game_active = true;
     }
 
     possibleMoves() {
@@ -35,40 +36,47 @@ export let State = class {
         // horizontal win
         for(let i = 0; i <9; i+=3){
             if(this.board[i]+this.board[i+1]+this.board[i+2]==3){
+                this.game_active = false;
                 return 1;
             }
             if(this.board[i]+this.board[i+1]+this.board[i+2]==-3){
+                this.game_active = false;
                 return -1;
             }
         }
         // vertical win
         for(let i = 0; i < 3; i++){
             if(this.board[i]+this.board[i+3]+this.board[i+6]==3){
+                this.game_active = false;
                 return 1;
             }
             if(this.board[i]+this.board[i+3]+this.board[i+6]==-3){
+                this.game_active = false;
                 return -1;
             }
         }
         // diagonal win
         if(this.board[0]+this.board[4]+this.board[8]==3 || 
             this.board[2]+this.board[4]+this.board[6]==3){
+            this.game_active = false;
             return 1;
         }
         if(this.board[0]+this.board[4]+this.board[8]==-3 || 
             this.board[2]+this.board[4]+this.board[6]==-3){
+            this.game_active = false;
             return -1;
         }
         // draw
-        let temp = false;
+        let isDraw = true;
         for(let i = 0; i < this.board.length; i++){
-            if(this.board[i]==0){
-                temp = true;
+            if(board[i] == ""){
+                isDraw = false;
             }
         }
-        if(temp==false){
+        if(isDraw == true){
             return 0;
         }
+        return null;
     }
 
     availablePositions(){
