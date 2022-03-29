@@ -113,8 +113,7 @@ export let Agent = class {
         this.learningRate = 0.2;
         this.explorationRate = 0.3;
         this.decayGamma = 0.9;
-        // need to initialise qTable
-        this.qTable = {}; // state (board hash) -> value
+        this.qTable = {};
     }
 
     getHash(board){
@@ -151,6 +150,13 @@ export let Agent = class {
     reset(){
 
     }
+
+    updateqTable(boardHash){
+        // state (board hash) -> value
+        if(this.qTable[boardHash]==undefined){
+            this.qTable[boardHash]=0;
+        }
+    }
 }
 
 // let p1 = new Agent(1);
@@ -159,3 +165,6 @@ export let Agent = class {
 
 // simulation.play();
 // above should result in two trained AI: p1 and p2
+
+let test = {}
+console.log(test[''])

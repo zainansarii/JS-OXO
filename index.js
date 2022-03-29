@@ -1,4 +1,4 @@
-import { State } from "./ai.js";
+import { Simulation } from "./ai.js";
 
 window.addEventListener('DOMContentLoaded', () => {
 
