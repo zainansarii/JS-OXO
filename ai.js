@@ -101,7 +101,14 @@ export let Simulation = class {
     }
     
     play(){
-
+        let epochs = 100;
+        for(let i = 0; i < epochs; i++){
+            while(this.game_active==true){
+                // player 1 moves
+                possibleActions = this.availablePositions()
+                p1_action = this.p1.chooseAction(this.board, possibleActions,)
+            }
+        }
     }
   };
 
@@ -121,22 +128,31 @@ export let Agent = class {
     }
     
     chooseAction(board, possibleActions){
+        // ADD EXPLORATION 20%
         // choose action with highest value in qTable
-        let possibleBoards = [];
-        for(let i = 0; i < possibleActions.length; i++){
-            possibleBoards[i] = board;
-            possibleBoards[i][possibleActions[i]] = this.playerNumber;
+        if(Math.random() < 0.2){
+            //EXPLORE
         }
-        let index = 0;
-        let maxValue = 0;
-        for(let i = 0; i < possibleBoards.length; i++){
-            let value = this.qTable[this.getHash(possibleBoards[i])];
-            if(value > maxValue){
-                maxValue = value;
-                index = i;
+        else{
+            let possibleBoards = [];
+            for(let i = 0; i < possibleActions.length; i++){
+                possibleBoards[i] = board;
+                possibleBoards[i][possibleActions[i]] = this.playerNumber;
             }
+            let index = 0;
+            let maxValue = -999;
+            for(let i = 0; i < possibleBoards.length; i++){
+                let value = this.qTable[this.getHash(possibleBoards[i])];
+                if(value==undefined){
+                    value=0
+                }
+                if(value > maxValue){
+                    maxValue = value;
+                    index = i;
+                }
+            }
+            return possibleActions[i];
         }
-        return possibleActions[i];
     }
 
     addState(){
@@ -166,5 +182,6 @@ export let Agent = class {
 // simulation.play();
 // above should result in two trained AI: p1 and p2
 
-let test = {}
-console.log(test[''])
+let p1 = new Agent(1);
+let p2 = new Agent(2);
+let simulation = new Simulation(p1, p2);
