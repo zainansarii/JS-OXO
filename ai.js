@@ -7,7 +7,8 @@
 // 5) States with 3 O's in a row => value=0
 // 6) Every other state has value=0.5 (50% probability of winning)
 
-export let Simulation = class {
+
+let Simulation = class {
     
     constructor(p1,p2) {
         this.p1 = p1
@@ -99,9 +100,11 @@ export let Simulation = class {
         }
     }
 
-    play(){
-        let epochs = 100;
+    train(){
+        let epochs = 200000;
         for(let i = 0; i < epochs; i++){
+            console.log("progress = " + i + "/" + epochs)
+            this.gameActive = true;
             while(this.gameActive){
                 // player 1 move: update simulation
                 let possibleActions = this.availableActions();
@@ -110,7 +113,6 @@ export let Simulation = class {
                 // player 1 move: update agent
                 let boardHash = this.getHash();
                 this.p1.addState(boardHash);
-
                 // check for winner
                 if(this.winner()!=null){
                     this.giveReward();
@@ -126,7 +128,6 @@ export let Simulation = class {
                     // player 2 move: update agent
                     boardHash = this.getHash();
                     this.p2.addState(boardHash)
-
                     // check for winner
                     if(this.winner()!=null){
                         this.giveReward();
@@ -136,6 +137,68 @@ export let Simulation = class {
                 }
             }
         }
+        var fs = require('fs');
+        fs.writeFile("test3.json", JSON.stringify(this.p1.qTable), function(err) {
+            if (err) {
+                console.log(err);
+            }
+        });
+    }
+
+    test(){
+        this.gameActive=true;
+        this.p1.loadqTable('test2.json');
+        while(this.gameActive){
+            this.showBoard()
+            console.log("AI thinking...")
+            let possibleActions = this.availableActions();
+            let p1_action = this.p1.chooseAction(this.board, possibleActions);
+            this.updateState(p1_action, this.p1);
+            // player 1 move: update agent
+            let boardHash = this.getHash();
+            this.p1.addState(boardHash);
+            this.showBoard()
+            // check for winner
+            if(this.winner()!=null){
+                this.giveReward();
+                this.reset();
+                break;
+            }
+            else{
+                // human takes turn
+                let prompt = require("prompt-sync")({ sigint: true });
+                let index = prompt("Which square would you like to play? (0-8) ");
+                this.updateState(index, this.p2);
+                // check for winner
+                if(this.winner()!=null){
+                    this.giveReward();
+                    this.reset();
+                    break;
+                }
+            }
+        }
+    }
+
+    showBoard(){
+        let token; 
+        for(let i = 0; i < 9; i+=3){
+            console.log('-------------');
+            let out = '| ';
+            for(let j = 0; j < 3; j++){
+                if(this.board[i+j] == 1){
+                    token = 'x';
+                }
+                if(this.board[i+j] == -1){
+                    token = 'o';
+                }
+                if(this.board[i+j] == 0){
+                    token = ' ';
+                }
+                out+=token + ' | ';
+            }
+            console.log(out);
+        }
+        console.log('-------------');
     }
 
     reset(){
@@ -147,7 +210,7 @@ export let Simulation = class {
     }
   };
 
-export let Agent = class {
+let Agent = class {
 
     constructor(playerNumber){
         this.playerNumber = playerNumber;
@@ -163,15 +226,30 @@ export let Agent = class {
     }
     
     chooseAction(board, possibleActions){
-        // ADD EXPLORATION 20%
         // choose action with highest value in qTable
-        if(Math.random() < 0.2){
-            //EXPLORE
+        let localBoard = JSON.parse(JSON.stringify(board));
+        let min = 0;
+        let max = 8;
+        
+        //VERY INEFFICIENT EXPLORATION:
+        // if(Math.random() < this.explorationRate){
+        //     let randomAction = parseInt(Math.random() * (max - min) + min);
+        //     while(!possibleActions.includes(randomAction)){
+        //         randomAction = parseInt(Math.random() * (max - min) + min);
+        //         //console.log(randomAction)
+        //     }
+        //     return randomAction;
+        // }
+
+        //MORE EFFICIENT EXPLORATION:
+        if(Math.random() < this.explorationRate){
+            let randomAction = possibleActions[Math.floor(Math.random() * possibleActions.length)];
+            return randomAction;
         }
         else{
             let possibleBoards = [];
             for(let i = 0; i < possibleActions.length; i++){
-                possibleBoards[i] = board;
+                possibleBoards[i] = localBoard;
                 possibleBoards[i][possibleActions[i]] = this.playerNumber;
             }
             let index = 0;
@@ -199,6 +277,9 @@ export let Agent = class {
         let r = reward;
         // reverse loop through states visited during game
         for(let i = this.states.length - 1; i >-1; i--){
+            if(this.qTable[this.states[i]] == undefined){
+                this.qTable[this.states[i]] = 0;
+            }
             this.qTable[this.states[i]] += this.learningRate*(this.decayGamma * r - this.qTable[this.states[i]]);
             r = this.qTable[this.states[i]];
         }
@@ -214,18 +295,14 @@ export let Agent = class {
             this.qTable[boardHash]=0;
         }
     }
+
+    loadqTable(fileName){
+        let fs = require('fs');
+        this.qTable = JSON.parse(fs.readFileSync(fileName, 'utf8'));
+    }
 }
 
 let p1 = new Agent(1);
 let p2 = new Agent(-1);
 let simulation = new Simulation(p1, p2);
-// console.log(simulation.play())
-
-
-// var dict = {
-//     'zain': 'cool',
-//     'ben': '4',
-//     'k': 'chsss'
-//   };
-//   dict['zain'] = 'hi'
-// console.log(dict['zain'])
+simulation.train();
