@@ -13,62 +13,52 @@ export let Simulation = class {
         this.p1 = p1
         this.p2 = p2
         this.board = [0,0,0,0,0,0,0,0,0];
-        this.game_active = true;
-    }
-
-    possibleMoves() {
-        let moves = [];
-        for(let i = 0; i < this.board.length; i++){
-            if(this.board[i]==0){
-                moves.push(i);
-            }
-        }
-        return moves;
+        this.gameActive = true;
     }
 
     getHash(){
-        this.boardHash = this.board.toString();
-        return this.boardHash;
+        let boardHash = this.board.toString();
+        return boardHash;
     }
 
     winner(){
         // horizontal win
         for(let i = 0; i <9; i+=3){
             if(this.board[i]+this.board[i+1]+this.board[i+2]==3){
-                this.game_active = false;
+                this.gameActive = false;
                 return 1;
             }
             if(this.board[i]+this.board[i+1]+this.board[i+2]==-3){
-                this.game_active = false;
+                this.gameActive = false;
                 return -1;
             }
         }
         // vertical win
         for(let i = 0; i < 3; i++){
             if(this.board[i]+this.board[i+3]+this.board[i+6]==3){
-                this.game_active = false;
+                this.gameActive = false;
                 return 1;
             }
             if(this.board[i]+this.board[i+3]+this.board[i+6]==-3){
-                this.game_active = false;
+                this.gameActive = false;
                 return -1;
             }
         }
         // diagonal win
         if(this.board[0]+this.board[4]+this.board[8]==3 || 
             this.board[2]+this.board[4]+this.board[6]==3){
-            this.game_active = false;
+            this.gameActive = false;
             return 1;
         }
         if(this.board[0]+this.board[4]+this.board[8]==-3 || 
             this.board[2]+this.board[4]+this.board[6]==-3){
-            this.game_active = false;
+            this.gameActive = false;
             return -1;
         }
         // draw
         let isDraw = true;
         for(let i = 0; i < this.board.length; i++){
-            if(board[i] == ""){
+            if(this.board[i] == ""){
                 isDraw = false;
             }
         }
@@ -78,7 +68,7 @@ export let Simulation = class {
         return null;
     }
 
-    availablePositions(){
+    availableActions(){
         // returns array of possible moves
         let positions = [];
         for(let i = 0; i < this.board.length; i++){
@@ -89,26 +79,71 @@ export let Simulation = class {
         return positions;
     }
 
-    updateState(position){
+    updateState(position, player){
+        this.board[position] = player.playerNumber;
     }
 
     giveReward(){
-
+        let res = this.winner();
+        if(res == 1){
+            this.p1.feedReward(1);
+            this.p2.feedReward(0);
+        }
+        else if(res == -1){
+            this.p1.feedReward(0);
+            this.p2.feedReward(1);
+        }
+        else{
+            this.p1.feedReward(0.1);
+            this.p1.feedReward(0.5);
+        }
     }
 
-    reset(){
-
-    }
-    
     play(){
         let epochs = 100;
         for(let i = 0; i < epochs; i++){
-            while(this.game_active==true){
-                // player 1 moves
-                possibleActions = this.availablePositions()
-                p1_action = this.p1.chooseAction(this.board, possibleActions,)
+            while(this.gameActive){
+                // player 1 move: update simulation
+                let possibleActions = this.availableActions();
+                let p1_action = this.p1.chooseAction(this.board, possibleActions);
+                this.updateState(p1_action, this.p1);
+                // player 1 move: update agent
+                let boardHash = this.getHash();
+                this.p1.addState(boardHash);
+
+                // check for winner
+                if(this.winner()!=null){
+                    this.giveReward();
+                    this.reset();
+                    break;
+                }
+                // if no winner, player 2 moves
+                else{
+                    // player 2 move: update simulation
+                    possibleActions = this.availableActions();
+                    let p2_action = this.p2.chooseAction(this.board, possibleActions);
+                    this.updateState(p2_action, this.p2);
+                    // player 2 move: update agent
+                    boardHash = this.getHash();
+                    this.p2.addState(boardHash)
+
+                    // check for winner
+                    if(this.winner()!=null){
+                        this.giveReward();
+                        this.reset();
+                        break;
+                    }
+                }
             }
         }
+    }
+
+    reset(){
+        this.board = [0,0,0,0,0,0,0,0,0];
+        this.boardHash = undefined;
+        this.gameActive = false;
+        this.p1.reset();
+        this.p2.reset();
     }
   };
 
@@ -151,20 +186,26 @@ export let Agent = class {
                     index = i;
                 }
             }
-            return possibleActions[i];
+            return possibleActions[index];
         }
     }
 
-    addState(){
-
+    addState(boardHash){
+        this.states.push(boardHash)
     }
 
-    feedReward(){
-
+    // at the end of the game, backpropogate and update states values
+    feedReward(reward){
+        let r = reward;
+        // reverse loop through states visited during game
+        for(let i = this.states.length - 1; i >-1; i--){
+            this.qTable[this.states[i]] += this.learningRate*(this.decayGamma * r - this.qTable[this.states[i]]);
+            r = this.qTable[this.states[i]];
+        }
     }
 
     reset(){
-
+        this.states = []
     }
 
     updateqTable(boardHash){
@@ -175,13 +216,16 @@ export let Agent = class {
     }
 }
 
-// let p1 = new Agent(1);
-// let p2 = new Agent(2);
-// let simulation = new Simulation(p1, p2);
-
-// simulation.play();
-// above should result in two trained AI: p1 and p2
-
 let p1 = new Agent(1);
-let p2 = new Agent(2);
+let p2 = new Agent(-1);
 let simulation = new Simulation(p1, p2);
+// console.log(simulation.play())
+
+
+// var dict = {
+//     'zain': 'cool',
+//     'ben': '4',
+//     'k': 'chsss'
+//   };
+//   dict['zain'] = 'hi'
+// console.log(dict['zain'])
