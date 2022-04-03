@@ -15,6 +15,8 @@ let Simulation = class {
         this.p2 = p2
         this.board = [0,0,0,0,0,0,0,0,0];
         this.gameActive = true;
+        this.wins = 0;
+        this.winRate = 0;
     }
 
     getHash(){
@@ -84,23 +86,26 @@ let Simulation = class {
         this.board[position] = player.playerNumber;
     }
 
-    giveReward(){
+    giveReward(gamesPlayed){
         let res = this.winner();
         if(res == 1){
-            this.p1.feedReward(1);
+            this.p1.feedReward(10);
+            this.wins++;
         }
         else if(res == -1){
-            this.p1.feedReward(-1);
+            this.p1.feedReward(-10);
         }
         else{ 
-            this.p1.feedReward(-0.1);
+            this.p1.feedReward(-1);
+            this.wins++;
         }
+        this.winRate = this.wins/gamesPlayed;
     }
 
     train(){
-        let epochs = 10000000;
+        let epochs = 100000;
         for(let i = 0; i < epochs; i++){
-            console.log("progress = " + i + "/" + epochs)
+            console.log("progress = " + i + "/" + epochs + " --- Winrate = " + this.winRate);
             this.gameActive = true;
             while(this.gameActive){
                 // player 1 move: update simulation
@@ -112,7 +117,7 @@ let Simulation = class {
                 this.p1.addState(boardHash);
                 // check for winner
                 if(this.winner()!=null){
-                    this.giveReward();
+                    this.giveReward(i+1);
                     this.reset();
                     break;
                 }
@@ -124,15 +129,16 @@ let Simulation = class {
                     this.updateState(p2_action, this.p2);
                     // check for winner
                     if(this.winner()!=null){
-                        this.giveReward();
+                        this.giveReward(i+1);
                         this.reset();
                         break;
                     }
                 }
             }
+            console.log(Object.keys(this.p1.qTable).length)
         }
         var fs = require('fs');
-        fs.writeFile("test3.json", JSON.stringify(this.p1.qTable), function(err) {
+        fs.writeFile("test.json", JSON.stringify(this.p1.qTable), function(err) {
             if (err) {
                 console.log(err);
             }
@@ -141,7 +147,7 @@ let Simulation = class {
 
     test(){
         this.gameActive=true;
-        this.p1.loadqTable('test3.json');
+        this.p1.loadqTable('test.json');
         while(this.gameActive){
             this.showBoard()
             console.log("AI thinking...")
@@ -209,10 +215,10 @@ let Agent = class {
     constructor(playerNumber){
         this.playerNumber = playerNumber;
         this.states = [];
-        this.learningRate = 0.2;
+        this.learningRate = 0.01;
         //SET EXPLORATION RATE TO 0 WHEN TESTING
-        this.explorationRate = 0;
-        this.decayGamma = 0.9;
+        this.explorationRate = 0.2;
+        this.decayGamma = 0.5;
         this.qTable = {};
     }
 
@@ -231,23 +237,37 @@ let Agent = class {
             return randomAction;
         }
         else{
+            function max(dict){
+                let max = -Infinity
+                let indices = [];
+                for(let i = 0; i < Object.keys(dict).length; i++){
+                    if(dict[i] == max){
+                        indices.push(i);
+                    } else if (dict[i] > max) {
+                        indices = [i];
+                        max = dict[i];
+                    }
+                }
+                return indices;
+            }
             let possibleBoards = [];
             for(let i = 0; i < possibleActions.length; i++){
                 possibleBoards[i] = localBoard;
                 possibleBoards[i][possibleActions[i]] = this.playerNumber;
             }
-            let index = 0;
-            let maxValue = -999;
+            let actionValues = {};
             for(let i = 0; i < possibleBoards.length; i++){
                 let value = this.qTable[this.getHash(possibleBoards[i])];
                 if(value==undefined){
                     value=0
                 }
-                if(value > maxValue){
-                    maxValue = value;
-                    index = i;
-                }
+                // else{
+                //     console.log("Exists!")
+                // }
+                actionValues[i] = value;
             }
+            let maxIndices = max(actionValues);
+            let index = maxIndices[Math.floor(Math.random() * maxIndices.length)];
             return possibleActions[index];
         }
     }
@@ -260,7 +280,7 @@ let Agent = class {
     feedReward(reward){
         let r = reward;
         // reverse loop through states visited during game
-        for(let i = this.states.length - 1; i >-1; i--){
+        for(let i = this.states.length-1; i >-1; i--){
             if(this.qTable[this.states[i]] == undefined){
                 this.qTable[this.states[i]] = 0;
             }
@@ -289,4 +309,5 @@ let Agent = class {
 let p1 = new Agent(1);
 let p2 = new Agent(-1);
 let simulation = new Simulation(p1, p2);
-simulation.test();
+simulation.train();
+

@@ -88,20 +88,20 @@ let Simulation = class {
         let res = this.winner();
         if(res == 1){
             this.p1.feedReward(1);
-            this.p2.feedReward(-1);
+            this.p2.feedReward(0);
         }
         else if(res == -1){
             this.p1.feedReward(-1);
             this.p2.feedReward(1);
         }
         else{
-            this.p1.feedReward(0.1);
-            this.p2.feedReward(0.1);
+            this.p1.feedReward(-0.1);
+            this.p2.feedReward(0.5);
         }
     }
 
     train(){
-        let epochs = 10000000;
+        let epochs = 50000000;
         for(let i = 0; i < epochs; i++){
             console.log("progress = " + i + "/" + epochs)
             this.gameActive = true;
@@ -138,7 +138,7 @@ let Simulation = class {
             }
         }
         var fs = require('fs');
-        fs.writeFile("test3.json", JSON.stringify(this.p1.qTable), function(err) {
+        fs.writeFile("test.json", JSON.stringify(this.p1.qTable), function(err) {
             if (err) {
                 console.log(err);
             }
@@ -147,7 +147,7 @@ let Simulation = class {
 
     test(){
         this.gameActive=true;
-        this.p1.loadqTable('test3.json');
+        this.p1.loadqTable('test.json');
         while(this.gameActive){
             this.showBoard()
             console.log("AI thinking...")
@@ -237,23 +237,34 @@ let Agent = class {
             return randomAction;
         }
         else{
+            function max(dict){
+                let max = -Infinity
+                let indices = [];
+                for(let i = 0; i < Object.keys(dict).length; i++){
+                    if(dict[i] == max){
+                        indices.push(i);
+                    } else if (dict[i] > max) {
+                        indices = [i];
+                        max = dict[i];
+                    }
+                }
+                return indices;
+            }
             let possibleBoards = [];
             for(let i = 0; i < possibleActions.length; i++){
                 possibleBoards[i] = localBoard;
                 possibleBoards[i][possibleActions[i]] = this.playerNumber;
             }
-            let index = 0;
-            let maxValue = -999;
+            let actionValues = {};
             for(let i = 0; i < possibleBoards.length; i++){
                 let value = this.qTable[this.getHash(possibleBoards[i])];
                 if(value==undefined){
                     value=0
                 }
-                if(value > maxValue){
-                    maxValue = value;
-                    index = i;
-                }
+                actionValues[i] = value;
             }
+            let maxIndices = max(actionValues);
+            let index = maxIndices[Math.floor(Math.random() * maxIndices.length)];
             return possibleActions[index];
         }
     }
