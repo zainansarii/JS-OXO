@@ -88,15 +88,12 @@ let Simulation = class {
         let res = this.winner();
         if(res == 1){
             this.p1.feedReward(1);
-            this.p2.feedReward(-1);
         }
         else if(res == -1){
             this.p1.feedReward(-1);
-            this.p2.feedReward(1);
         }
-        else{
-            this.p1.feedReward(0.1);
-            this.p2.feedReward(0.1);
+        else{ 
+            this.p1.feedReward(-0.1);
         }
     }
 
@@ -123,11 +120,8 @@ let Simulation = class {
                 else{
                     // player 2 move: update simulation
                     possibleActions = this.availableActions();
-                    let p2_action = this.p2.chooseAction(this.board, possibleActions);
+                    let p2_action = possibleActions[Math.floor(Math.random() * possibleActions.length)];
                     this.updateState(p2_action, this.p2);
-                    // player 2 move: update agent
-                    boardHash = this.getHash();
-                    this.p2.addState(boardHash)
                     // check for winner
                     if(this.winner()!=null){
                         this.giveReward();
