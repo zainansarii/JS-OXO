@@ -5,7 +5,11 @@
 // 3) This is the state's VALUE
 // 4) States with 3 X's in a row => value=1
 // 5) States with 3 O's in a row => value=0
-// 6) Every other state has value=0.5 (50% probability of winning)
+// 6) Every other state has value=0.5 (50% probability of winning
+
+
+// ALGO NOT EXPLORING BUG
+// 
 
 
 let Simulation = class {
@@ -89,21 +93,21 @@ let Simulation = class {
     giveReward(gamesPlayed){
         let res = this.winner();
         if(res == 1){
-            this.p1.feedReward(10);
+            this.p1.feedReward(1);
             this.wins++;
         }
         else if(res == -1){
-            this.p1.feedReward(-10);
+            this.p1.feedReward(-1);
         }
         else{ 
-            this.p1.feedReward(-1);
+            this.p1.feedReward(0);
             this.wins++;
         }
         this.winRate = this.wins/gamesPlayed;
     }
 
     train(){
-        let epochs = 100000;
+        let epochs = 10000;
         for(let i = 0; i < epochs; i++){
             console.log("progress = " + i + "/" + epochs + " --- Winrate = " + this.winRate);
             this.gameActive = true;
@@ -229,16 +233,14 @@ let Agent = class {
     chooseAction(board, possibleActions){
         // choose action with highest value in qTable
         let localBoard = JSON.parse(JSON.stringify(board));
-        let min = 0;
-        let max = 8;
-        
+
         if(Math.random() < this.explorationRate){
             let randomAction = possibleActions[Math.floor(Math.random() * possibleActions.length)];
             return randomAction;
         }
         else{
             function max(dict){
-                let max = -Infinity
+                let max = -999;
                 let indices = [];
                 for(let i = 0; i < Object.keys(dict).length; i++){
                     if(dict[i] == max){
@@ -259,7 +261,7 @@ let Agent = class {
             for(let i = 0; i < possibleBoards.length; i++){
                 let value = this.qTable[this.getHash(possibleBoards[i])];
                 if(value==undefined){
-                    value=0
+                    value=0;
                 }
                 // else{
                 //     console.log("Exists!")
@@ -310,4 +312,3 @@ let p1 = new Agent(1);
 let p2 = new Agent(-1);
 let simulation = new Simulation(p1, p2);
 simulation.train();
-

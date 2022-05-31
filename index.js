@@ -1,5 +1,3 @@
-import { Simulation } from "./ai.js";
-
 window.addEventListener('DOMContentLoaded', () => {
 
     const tiles = Array.from(document.querySelectorAll('.tile'));

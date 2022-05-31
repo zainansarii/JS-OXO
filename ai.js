@@ -95,24 +95,63 @@ let Simulation = class {
             this.p2.feedReward(1);
         }
         else{
-            this.p1.feedReward(-0.1);
-            this.p2.feedReward(0.5);
+            this.p1.feedReward(0.1);
+            this.p2.feedReward(0.1);
         }
     }
 
+
+    // player 1 moves first
+    // train(){
+    //     let epochs = 500000;
+    //     for(let i = 0; i < epochs; i++){
+    //         console.log("progress = " + i + "/" + epochs)
+    //         this.gameActive = true;
+    //         while(this.gameActive){
+    //             // player 1 move: update simulation
+    //             let possibleActions = this.availableActions();
+    //             let p1_action = this.p1.chooseAction(this.board, possibleActions);
+    //             this.updateState(p1_action, this.p1);
+    //             // check for winner
+    //             if(this.winner()!=null){
+    //                 this.giveReward();
+    //                 this.reset();
+    //                 break;
+    //             }
+    //             // if no winner, player 2 moves
+    //             else{
+    //                 // player 2 move: update simulation
+    //                 possibleActions = this.availableActions();
+    //                 let p2_action = this.p2.chooseAction(this.board, possibleActions);
+    //                 this.updateState(p2_action, this.p2);
+    //                 // check for winner
+    //                 if(this.winner()!=null){
+    //                     this.giveReward();
+    //                     this.reset();
+    //                     break;
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     var fs = require('fs');
+    //     fs.writeFile("test.json", JSON.stringify(this.p1.qTable), function(err) {
+    //         if (err) {
+    //             console.log(err);
+    //         }
+    //     });
+    // }
+
+    // player 2 moves first
     train(){
-        let epochs = 50000000;
+        let epochs = 500000;
         for(let i = 0; i < epochs; i++){
             console.log("progress = " + i + "/" + epochs)
             this.gameActive = true;
             while(this.gameActive){
                 // player 1 move: update simulation
                 let possibleActions = this.availableActions();
-                let p1_action = this.p1.chooseAction(this.board, possibleActions);
-                this.updateState(p1_action, this.p1);
-                // player 1 move: update agent
-                let boardHash = this.getHash();
-                this.p1.addState(boardHash);
+                let p2_action = this.p2.chooseAction(this.board, possibleActions);
+                this.updateState(p2_action, this.p2);
                 // check for winner
                 if(this.winner()!=null){
                     this.giveReward();
@@ -123,11 +162,8 @@ let Simulation = class {
                 else{
                     // player 2 move: update simulation
                     possibleActions = this.availableActions();
-                    let p2_action = this.p2.chooseAction(this.board, possibleActions);
-                    this.updateState(p2_action, this.p2);
-                    // player 2 move: update agent
-                    boardHash = this.getHash();
-                    this.p2.addState(boardHash)
+                    let p1_action = this.p1.chooseAction(this.board, possibleActions);
+                    this.updateState(p1_action, this.p1);
                     // check for winner
                     if(this.winner()!=null){
                         this.giveReward();
@@ -138,25 +174,58 @@ let Simulation = class {
             }
         }
         var fs = require('fs');
-        fs.writeFile("test.json", JSON.stringify(this.p1.qTable), function(err) {
+        fs.writeFile("test_2.json", JSON.stringify(this.p1.qTable), function(err) {
             if (err) {
                 console.log(err);
             }
         });
     }
 
+    // player 1 moves first
+    // test(){
+    //     this.gameActive=true;
+    //     this.p1.loadqTable('test.json');
+    //     while(this.gameActive){
+    //         this.showBoard()
+    //         console.log("AI thinking...")
+    //         let possibleActions = this.availableActions();
+    //         let p1_action = this.p1.chooseAction(this.board, possibleActions);
+    //         this.updateState(p1_action, this.p1);
+    //         // // player 1 move: update agent
+    //         // let boardHash = this.getHash();
+    //         // this.p1.addState(boardHash);
+    //         this.showBoard()
+    //         // check for winner
+    //         if(this.winner()!=null){
+    //             this.giveReward();
+    //             this.reset();
+    //             break;
+    //         }
+    //         else{
+    //             // human takes turn
+    //             let prompt = require("prompt-sync")({ sigint: true });
+    //             let index = prompt("Which square would you like to play? (0-8) ");
+    //             this.updateState(index, this.p2);
+    //             // check for winner
+    //             if(this.winner()!=null){
+    //                 this.giveReward();
+    //                 this.reset();
+    //                 break;
+    //             }
+    //         }
+    //     }
+    // }
+
+    // player 2 moves first
     test(){
         this.gameActive=true;
-        this.p1.loadqTable('test.json');
+        this.p1.loadqTable('test_2.json');
+        this.showBoard()
         while(this.gameActive){
-            this.showBoard()
-            console.log("AI thinking...")
-            let possibleActions = this.availableActions();
-            let p1_action = this.p1.chooseAction(this.board, possibleActions);
-            this.updateState(p1_action, this.p1);
-            // player 1 move: update agent
-            let boardHash = this.getHash();
-            this.p1.addState(boardHash);
+            // human takes turn
+            let prompt = require("prompt-sync")({ sigint: true });
+            let index = prompt("Which square would you like to play? (0-8) ");
+            this.updateState(index, this.p2);
             this.showBoard()
             // check for winner
             if(this.winner()!=null){
@@ -165,10 +234,11 @@ let Simulation = class {
                 break;
             }
             else{
-                // human takes turn
-                let prompt = require("prompt-sync")({ sigint: true });
-                let index = prompt("Which square would you like to play? (0-8) ");
-                this.updateState(index, this.p2);
+                console.log("AI thinking...")
+                let possibleActions = this.availableActions();
+                let p1_action = this.p1.chooseAction(this.board, possibleActions);
+                this.updateState(p1_action, this.p1);
+                this.showBoard()
                 // check for winner
                 if(this.winner()!=null){
                     this.giveReward();
@@ -215,7 +285,7 @@ let Agent = class {
     constructor(playerNumber){
         this.playerNumber = playerNumber;
         this.states = [];
-        this.learningRate = 0.2;
+        this.learningRate = 0.5;
         //SET EXPLORATION RATE TO 0 WHEN TESTING
         this.explorationRate = 0;
         this.decayGamma = 0.9;
@@ -229,72 +299,59 @@ let Agent = class {
     chooseAction(board, possibleActions){
         // choose action with highest value in qTable
         let localBoard = JSON.parse(JSON.stringify(board));
-        let min = 0;
-        let max = 8;
-        
+        if(this.qTable[this.getHash(localBoard)] == undefined){
+            this.qTable[this.getHash(localBoard)] = [-1,-1,-1,-1,-1,-1,-1,-1,-1];
+        }
+
         if(Math.random() < this.explorationRate){
             let randomAction = possibleActions[Math.floor(Math.random() * possibleActions.length)];
+            this.addState(this.getHash(localBoard), randomAction);
             return randomAction;
         }
         else{
-            function max(dict){
-                let max = -Infinity
-                let indices = [];
-                for(let i = 0; i < Object.keys(dict).length; i++){
-                    if(dict[i] == max){
-                        indices.push(i);
-                    } else if (dict[i] > max) {
-                        indices = [i];
-                        max = dict[i];
-                    }
+            let indices = [];
+            let localBoardQValues = this.qTable[this.getHash(localBoard)];
+            let maxQVal = Math.max(...localBoardQValues);
+            for(let i = 0; i < localBoardQValues.length; i++){
+                if(localBoardQValues[i] == maxQVal){
+                    indices.push(i);
                 }
-                return indices;
             }
-            let possibleBoards = [];
-            for(let i = 0; i < possibleActions.length; i++){
-                possibleBoards[i] = localBoard;
-                possibleBoards[i][possibleActions[i]] = this.playerNumber;
-            }
-            let actionValues = {};
-            for(let i = 0; i < possibleBoards.length; i++){
-                let value = this.qTable[this.getHash(possibleBoards[i])];
-                if(value==undefined){
-                    value=0
+            while(true){
+                let index = indices[Math.floor(Math.random() * indices.length)];
+                if(possibleActions.includes(index)){
+                    this.addState(this.getHash(localBoard), index);
+                    return index
                 }
-                actionValues[i] = value;
             }
-            let maxIndices = max(actionValues);
-            let index = maxIndices[Math.floor(Math.random() * maxIndices.length)];
-            return possibleActions[index];
         }
     }
 
-    addState(boardHash){
-        this.states.push(boardHash)
+
+    addState(boardHash, action){
+        this.states.push([boardHash,action])
     }
 
     // at the end of the game, backpropogate and update states values
     feedReward(reward){
         let r = reward;
-        // reverse loop through states visited during game
-        for(let i = this.states.length - 1; i >-1; i--){
-            if(this.qTable[this.states[i]] == undefined){
-                this.qTable[this.states[i]] = 0;
+        let nextMax = -1.0
+        let moveHistory = this.states.reverse()
+        for(let i = 0; i < moveHistory.length; i++){
+            let move = moveHistory[i];
+            if(nextMax < 0){
+                this.qTable[move[0]][move[1]] = r;
             }
-            this.qTable[this.states[i]] += this.learningRate*(this.decayGamma * r - this.qTable[this.states[i]]);
-            r = this.qTable[this.states[i]];
+            else{
+                this.qTable[move[0]][move[1]] = this.qTable[move[0]][move[1]] * (
+                    1.0 - this.learningRate) + this.learningRate * this.decayGamma * nextMax
+            }
+            nextMax = Math.max(...this.qTable[move[0]])
         }
     }
 
     reset(){
         this.states = []
-    }
-
-    updateqTable(boardHash){
-        // state (board hash) -> value
-        if(this.qTable[boardHash]==undefined){
-            this.qTable[boardHash]=0;
-        }
     }
 
     loadqTable(fileName){
