@@ -7,7 +7,6 @@
 // 5) States with 3 O's in a row => value=0
 // 6) Every other state has value=0.5 (50% probability of winning)
 
-
 let Simulation = class {
     
     constructor(p1,p2) {
@@ -100,47 +99,6 @@ let Simulation = class {
         }
     }
 
-
-    // player 1 moves first
-    // train(){
-    //     let epochs = 500000;
-    //     for(let i = 0; i < epochs; i++){
-    //         console.log("progress = " + i + "/" + epochs)
-    //         this.gameActive = true;
-    //         while(this.gameActive){
-    //             // player 1 move: update simulation
-    //             let possibleActions = this.availableActions();
-    //             let p1_action = this.p1.chooseAction(this.board, possibleActions);
-    //             this.updateState(p1_action, this.p1);
-    //             // check for winner
-    //             if(this.winner()!=null){
-    //                 this.giveReward();
-    //                 this.reset();
-    //                 break;
-    //             }
-    //             // if no winner, player 2 moves
-    //             else{
-    //                 // player 2 move: update simulation
-    //                 possibleActions = this.availableActions();
-    //                 let p2_action = this.p2.chooseAction(this.board, possibleActions);
-    //                 this.updateState(p2_action, this.p2);
-    //                 // check for winner
-    //                 if(this.winner()!=null){
-    //                     this.giveReward();
-    //                     this.reset();
-    //                     break;
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     var fs = require('fs');
-    //     fs.writeFile("test.json", JSON.stringify(this.p1.qTable), function(err) {
-    //         if (err) {
-    //             console.log(err);
-    //         }
-    //     });
-    // }
-
     // player 2 moves first
     train(){
         let epochs = 500000;
@@ -180,41 +138,6 @@ let Simulation = class {
             }
         });
     }
-
-    // player 1 moves first
-    // test(){
-    //     this.gameActive=true;
-    //     this.p1.loadqTable('test.json');
-    //     while(this.gameActive){
-    //         this.showBoard()
-    //         console.log("AI thinking...")
-    //         let possibleActions = this.availableActions();
-    //         let p1_action = this.p1.chooseAction(this.board, possibleActions);
-    //         this.updateState(p1_action, this.p1);
-    //         // // player 1 move: update agent
-    //         // let boardHash = this.getHash();
-    //         // this.p1.addState(boardHash);
-    //         this.showBoard()
-    //         // check for winner
-    //         if(this.winner()!=null){
-    //             this.giveReward();
-    //             this.reset();
-    //             break;
-    //         }
-    //         else{
-    //             // human takes turn
-    //             let prompt = require("prompt-sync")({ sigint: true });
-    //             let index = prompt("Which square would you like to play? (0-8) ");
-    //             this.updateState(index, this.p2);
-    //             // check for winner
-    //             if(this.winner()!=null){
-    //                 this.giveReward();
-    //                 this.reset();
-    //                 break;
-    //             }
-    //         }
-    //     }
-    // }
 
     // player 2 moves first
     test(){
