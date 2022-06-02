@@ -5,7 +5,7 @@ let Agent = class {
         this.states = [];
         this.learningRate = 0.5;
         this.decayGamma = 0.9;
-        this.qTable = {};
+        this.qTable = JSON.parse(algo);
     }
 
     getHash(board){
@@ -36,11 +36,6 @@ let Agent = class {
     reset(){
         this.states = []
     }
-
-    loadqTable(filename){
-        // FIX THIS LINE OF CODE TO IMPORT Q TABLE FROM JSON (REQUIRE JS?)
-        fetch(filename).then(response => console.log(response.json()))
-    }
 }
 
 window.addEventListener('DOMContentLoaded', () => { 
@@ -55,7 +50,32 @@ window.addEventListener('DOMContentLoaded', () => {
     let gameIsActive = true;
 
     let ai = new Agent(1);
-    ai.loadqTable('test_2.json')
+    console.log(ai.qTable)
+
+    const tileIsOccupied = (index) => {
+        if(board[index]!=""){
+            return true;
+        }
+        return false ;
+    }
+
+    const availableActions = () => {
+        let positions = [];
+        for(let i = 0; i < board.length; i++){
+            if(board[i] == ''){
+                positions.push(i);
+            }
+        }
+        return positions;
+    }
+
+    const getHash = () => {
+        let aiBoard = [];
+        board.forEach(function(item, i) { if (item == 'X') aiBoard[i] = -1; });
+        board.forEach(function(item, i) { if (item == 'O') aiBoard[i] = 1; });
+        board.forEach(function(item, i) { if (item == '') aiBoard[i] = 0; });
+        return ai.getHash(aiBoard);
+    }
 
     const switchPlayer = () => {
         currentPlayer == 'X' ? currentPlayer = 'O' : currentPlayer = 'X';
@@ -128,9 +148,18 @@ window.addEventListener('DOMContentLoaded', () => {
     const updateBoard = (tile, index) => {
         if(gameIsActive){
             if(!tileIsOccupied(index)){
+                // PLAYER  MOVES
                 tile.innerHTML = '<fade-in>' + currentPlayer;
                 board[index] = currentPlayer;
                 checkWin() ? setWinner() : checkDraw() ? setDraw() : switchPlayer();
+                // AI MOVES
+                setTimeout(function(){
+                    let boardHash = getHash();
+                    let aiAction = ai.chooseAction(boardHash, availableActions());
+                    tiles[aiAction].innerHTML = '<fade-in>' + currentPlayer;
+                    board[aiAction] = currentPlayer;
+                    checkWin() ? setWinner() : checkDraw() ? setDraw() : switchPlayer();
+                }, 500); 
             }
         }
     }
