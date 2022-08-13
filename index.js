@@ -125,7 +125,12 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     const setWinner = () => {
-        announcer.innerHTML = 'Player ' + currentPlayer + ' wins! <br><br>';
+        if(currentPlayer == 'X'){
+            announcer.innerHTML = "You win! <br><br>"
+        }
+        else if(currentPlayer = 'O'){
+            announcer.innerHTML = "The AI wins! <br><br>"
+        }
         announcer.classList.remove('hide');
         gameIsActive = false;
     }
@@ -154,12 +159,14 @@ window.addEventListener('DOMContentLoaded', () => {
                 checkWin() ? setWinner() : checkDraw() ? setDraw() : switchPlayer();
                 // AI MOVES
                 setTimeout(function(){
-                    let boardHash = getHash();
-                    let aiAction = ai.chooseAction(boardHash, availableActions());
-                    tiles[aiAction].innerHTML = '<fade-in>' + currentPlayer;
-                    board[aiAction] = currentPlayer;
-                    checkWin() ? setWinner() : checkDraw() ? setDraw() : switchPlayer();
-                }, 500); 
+                    if(gameIsActive){
+                        let boardHash = getHash();
+                        let aiAction = ai.chooseAction(boardHash, availableActions());
+                        tiles[aiAction].innerHTML = '<fade-in>' + currentPlayer;
+                        board[aiAction] = currentPlayer;
+                        checkWin() ? setWinner() : checkDraw() ? setDraw() : switchPlayer();
+                    }
+                }, 300); 
             }
         }
     }
